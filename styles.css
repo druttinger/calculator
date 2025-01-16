@@ -1,0 +1,9 @@
+button, input {
+    border: 2px solid darkblue;
+    border-radius: 10px;
+}
+
+button {
+    background-color: lightcyan;
+    color: black;
+}
