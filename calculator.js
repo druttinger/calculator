@@ -42,28 +42,95 @@ function initiate() {
     clearButton.style.fontSize = '4em';
     container.appendChild(clearButton);
 
+function calculate() {
+    try {
+        switch (operator) {
+            case '+':
+                term1 = display.value = +term1 + +term2;
+                term2 = '';
+                break;
+            case '-':
+                term1 = display.value = +term1 - +term2;
+                term2 = '';
+                break;
+            case '*':
+                term1 = display.value = +term1 * +term2;
+                term2 = '';
+                break;
+            case '/':
+                if (+term2 === 0) {
+                    display.value = 'You suck!';
+                    alert('You suck at math!');
+                    term1 = term2 = operator = '';
+                    break;
+                }
+                term1 = display.value = (+term1 / +term2).toPrecision(MAX_DISPLAY_SIZE);
+                term2 = '';
+                break;
+        }
+        reset = true;
+        operator = '';
+    } catch {
+        display.value = 'Error';
+    } 
+}
+
+function clearOutput() {
+    if (display.value === '') {
+        term1 = '';
+        reset = true;
+    } else {
+        display.value = '';
+        operator = '';
+    }
+}
+
+function updateDisplay(input) {
+    if (display.value === 'Error') {
+        display.value = '';
+    }
+    if (!operator && !operators.includes(input)) {
+        if (reset) {
+            term1 = display.value = '';
+            reset = false;
+        }
+        if (!(input === '.') || (!term1.includes('.') && !!term1)) {
+            term1 = display.value += input;
+        }
+    }else if (!operator && operators.includes(input) && !!term1) {
+        operator = input;
+        display.value += input;
+    } else if (!!operator && !operators.includes(input)){
+        if (!(input === '.') || (!term2.includes('.') && !!term2)) {
+            display.value += input;
+            term2 += input;
+        }
+    }
+}
 
 
     // Add event listeners to buttons
     container.querySelectorAll('button').forEach(button => {
         button.addEventListener('click', () => {
             if (button.textContent === '=') {
-                try {
-                    display.value = eval(display.value);
-                } catch {
-                    display.value = 'Error';
-                } 
-            } else if (button.textContent === 'C') {
-                        if (display.value === '') {
-                            lastOperation = '';
-                        } else {
-                            lastOperation = display.value;
-                            display.value = '';
-                        }
+                    calculate();
+                } else if (button.textContent === 'C') {
+                clearOutput();
             } else {
-                display.value += button.textContent;
+                updateDisplay(button.textContent);
             }
         });
+    });
+
+    document.addEventListener('keydown', (event) => {
+        const key = event.key;
+        if (buttons.includes(key)) {
+            updateDisplay(key);
+        } else if (key === 'Enter') {
+            calculate();
+        } else if (key === 'Backspace') {
+            clearOutput();
+        }
     });
 
     // Append the container to the body
@@ -72,4 +139,11 @@ function initiate() {
 
 // Call the initiate function to create the calculator
 initiate();
-let lastOperation = '';
+// for limiting decimals displayed
+const MAX_DISPLAY_SIZE = 9;
+let term1 = '';
+let term2 = '';
+let operator = '';
+const operators = ['+', '-', '*', '/'];
+// for tracking if new input should reset the display
+let reset = false;
